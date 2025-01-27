@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>إزالة الخلفية من الصور</title>
     <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Tajawal', sans-serif;
             background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
@@ -14,32 +20,44 @@
             margin: 0;
             min-height: 100vh;
         }
+
         .container {
-            max-width: 90%;
-            margin: 20px auto;
+            max-width: 95%;
+            margin: 10px auto;
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
+
         h1 {
             color: #2e7d32;
             font-size: 24px;
             margin-bottom: 15px;
         }
+
         .logo {
             font-size: 60px;
             color: #4CAF50;
             margin-bottom: 15px;
             animation: bounce 2s infinite;
         }
+
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
             40% { transform: translateY(-20px); }
             60% { transform: translateY(-10px); }
         }
-        .upload-section { margin: 15px 0; }
-        .upload-section input { display: none; }
+
+        .upload-section { 
+            margin: 15px 0;
+        }
+
+        .upload-section input { 
+            display: none;
+        }
+
         .upload-section label,
         .action-button {
             background-color: #4CAF50;
@@ -53,54 +71,67 @@
             display: inline-block;
             margin: 8px;
         }
+
         .upload-section label:hover,
         .action-button:hover {
             background-color: #45a049;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
+
         .action-button:disabled {
             background-color: #a5d6a7;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
+
         .button-group {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin-top: 15px;
         }
+
         .image-preview {
-            max-width: 100%;
+            width: 100%;
+            max-height: 70vh;
             height: auto;
+            object-fit: contain;
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin: 15px auto;
             display: none;
         }
+
         #result-section {
             margin-top: 15px;
             min-height: 80px;
         }
+
         #result-image {
-            max-width: 100%;
+            width: 100%;
+            max-height: 70vh;
             height: auto;
+            object-fit: contain;
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             display: none;
             margin: 0 auto;
         }
+
         .loading {
             display: none;
             margin-top: 15px;
             font-size: 16px;
             color: #2e7d32;
         }
+
         #canvas {
             display: none !important;
             visibility: hidden;
         }
+
         .developer-credit {
             text-align: center;
             margin-top: 30px;
@@ -114,11 +145,18 @@
             .container {
                 padding: 15px;
             }
+            
             h1 {
                 font-size: 22px;
             }
+            
             .logo {
                 font-size: 50px;
+            }
+            
+            .image-preview,
+            #result-image {
+                max-height: 60vh;
             }
         }
 
@@ -126,27 +164,38 @@
             body {
                 padding: 5px;
             }
+            
             .container {
                 max-width: 100%;
                 margin: 10px auto;
                 padding: 10px;
             }
+            
             h1 {
                 font-size: 20px;
             }
+            
             .logo {
                 font-size: 40px;
             }
+            
             .button-group {
                 flex-direction: column;
             }
+            
             .action-button {
                 width: 100%;
                 margin: 5px 0;
             }
+            
             .upload-section label {
                 display: block;
                 width: 100%;
+            }
+            
+            .image-preview,
+            #result-image {
+                max-height: 50vh;
             }
         }
 
@@ -154,9 +203,11 @@
             .container {
                 padding: 8px;
             }
+            
             h1 {
                 font-size: 18px;
             }
+            
             .developer-credit {
                 font-size: 11px;
             }
@@ -209,7 +260,8 @@
             loading: document.getElementById('loading'),
             resultImage: document.getElementById('result-image'),
             canvas: document.getElementById('canvas'),
-            ctx: document.getElementById('canvas').getContext('2d')
+            ctx: document.getElementById('canvas').getContext('2d'),
+            container: document.querySelector('.container')
         };
 
         let processedImageUrl = null;
@@ -225,9 +277,18 @@
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                elements.imagePreview.src = e.target.result;
-                elements.imagePreview.style.display = 'block';
-                elements.removeBgButton.disabled = false;
+                const img = new Image();
+                img.onload = () => {
+                    const containerWidth = elements.container.clientWidth - 40;
+                    const scaleFactor = Math.min(containerWidth / img.width, 1);
+                    
+                    elements.imagePreview.width = img.width * scaleFactor;
+                    elements.imagePreview.height = img.height * scaleFactor;
+                    elements.imagePreview.src = e.target.result;
+                    elements.imagePreview.style.display = 'block';
+                    elements.removeBgButton.disabled = false;
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -285,13 +346,23 @@
         }
 
         function prepareCanvas(mainImage, logoImage) {
-            const maxWidth = Math.min(mainImage.width, window.innerWidth * 0.8);
-            const scaleFactor = maxWidth / mainImage.width;
+            const containerWidth = elements.container.clientWidth - 40;
+            const scaleFactor = Math.min(containerWidth / mainImage.width, 1);
             
-            elements.canvas.width = maxWidth;
+            elements.canvas.width = mainImage.width * scaleFactor;
             elements.canvas.height = mainImage.height * scaleFactor;
             
-            elements.ctx.drawImage(mainImage, 0, 0, elements.canvas.width, elements.canvas.height);
+            elements.ctx.drawImage(
+                mainImage,
+                0,
+                0,
+                mainImage.width,
+                mainImage.height,
+                0,
+                0,
+                elements.canvas.width,
+                elements.canvas.height
+            );
 
             const logoSize = Math.max(elements.canvas.width * 0.1, 30);
             const logoX = elements.canvas.width - logoSize - 10;

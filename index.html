@@ -50,7 +50,9 @@
             60% { transform: translateY(-10px); }
         }
 
-        .upload-section { 
+        .upload-section {
+            display: flex;
+            justify-content: center;
             margin: 15px 0;
         }
 
@@ -58,21 +60,37 @@
             display: none;
         }
 
-        .upload-section label,
-        .action-button {
+        .upload-section label {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 10px 25px;
             border-radius: 30px;
             cursor: pointer;
             font-size: 14px;
             border: none;
             transition: all 0.3s ease;
-            display: inline-block;
-            margin: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .upload-section label:hover,
+        .upload-section label:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
         .action-button:hover {
             background-color: #45a049;
             transform: translateY(-2px);
@@ -171,6 +189,19 @@
                 padding: 10px;
             }
             
+            .upload-section {
+                width: 100%;
+                margin: 10px 0;
+            }
+            
+            .upload-section label,
+            .action-button {
+                width: 100%;
+                padding: 12px;
+                margin: 5px 0;
+                justify-content: center;
+            }
+            
             h1 {
                 font-size: 20px;
             }
@@ -181,16 +212,6 @@
             
             .button-group {
                 flex-direction: column;
-            }
-            
-            .action-button {
-                width: 100%;
-                margin: 5px 0;
-            }
-            
-            .upload-section label {
-                display: block;
-                width: 100%;
             }
             
             .image-preview,
@@ -224,7 +245,10 @@
         <h1>إزالة الخلفية من الصور</h1>
 
         <div class="upload-section">
-            <label for="image-upload">اختر صورة</label>
+            <label for="image-upload" class="action-button">
+                <i class="fas fa-upload"></i>
+                اختر صورة
+            </label>
             <input type="file" id="image-upload" accept="image/*">
         </div>
 
